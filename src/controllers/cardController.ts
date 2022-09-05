@@ -9,6 +9,13 @@ async function createCards(req: Request, res: Response, next: NextFunction) {
   res.sendStatus(201);
 }
 
+async function activateCard(req: Request, res: Response, next: NextFunction) {
+  const bodyData = req.body;
+  await cardService.activateCard(bodyData);
+  res.sendStatus(200);
+}
+
 export default {
   createCards,
+  activateCard,
 };

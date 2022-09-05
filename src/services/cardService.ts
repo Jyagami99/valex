@@ -1,16 +1,20 @@
 import {
+  findById,
   findByTypeAndEmployeeId,
   insert,
   TransactionTypes,
+  update,
 } from "../respositories/cardRepository";
 import { findByApiKey } from "../respositories/companyRepository";
-import { findById } from "../respositories/employeeRepository";
+import { findById as findEmployeeById } from "../respositories/employeeRepository";
 import { faker } from "@faker-js/faker";
 import errorFactory from "../utils/error";
 import notFound from "../utils/notFound";
 import getCardHolderName from "../utils/getCardHolderName";
 import dayjs from "dayjs";
 import Cryptr from "cryptr";
+import bcrypt from "bcrypt";
+import isExpired from "../utils/isExpired";
 
 const CRYPTR_SECRET = process.env.CRYPTR_SECRET || "some secret";
 const cryptr = new Cryptr(CRYPTR_SECRET);
@@ -30,7 +34,7 @@ async function createCards(
 
   const { employeeId, type, password, isVirtual, originalCardId } = cardData;
 
-  const employeeData = await findById(employeeId);
+  const employeeData = await findEmployeeById(employeeId);
   if (!employeeData) throw notFound("Employee");
 
   const employeeCardWithSameType = await findByTypeAndEmployeeId(
@@ -64,6 +68,35 @@ async function createCards(
   await insert(newCardData);
 }
 
+async function activateCard(data: {
+  id: number;
+  cvc: string;
+  password: string;
+}) {
+  const { id, cvc, password } = data;
+
+  const cardData = await findById(id);
+  if (!cardData) throw notFound("Card");
+
+  if (cardData.password)
+    throw errorFactory("conflict", "Your card has already been activated.");
+  if (isExpired(cardData.expirationDate))
+    throw errorFactory("card_expired", "your card has expired.");
+
+  const decryptedCVC = cryptr.decrypt(cardData.securityCode);
+  console.log("decryptedCVC ", decryptedCVC);
+
+  if (cvc !== decryptedCVC)
+    throw errorFactory(
+      "invalid_security_code",
+      "Could not match the specified security code."
+    );
+
+  const toUpdate = { password: bcrypt.hashSync(password, 10) };
+  await update(id, toUpdate);
+}
+
 export default {
   createCards,
+  activateCard,
 };
