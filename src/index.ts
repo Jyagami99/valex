@@ -3,6 +3,8 @@ import cors from "cors";
 import "express-async-errors";
 import dotenv from "dotenv";
 import cardsRouter from "./routes/cardRouter";
+import rechargeRouter from "./routes/rechargeRouter";
+import paymentRouter from "./routes/paymentRouter";
 import errorHandler from "./middlewares/errorHandler";
 
 async function main() {
@@ -13,6 +15,8 @@ async function main() {
   app.use(json());
 
   app.use("/cards", cardsRouter);
+  app.use("/recharges", rechargeRouter);
+  app.use("/payments", paymentRouter);
 
   app.use(errorHandler);
 

@@ -7,6 +7,15 @@ export interface Payment {
   timestamp: Date;
   amount: number;
 }
+
+export interface OnlinePayment {
+  number: string;
+  cardholderName: string;
+  expirationDate: string;
+  securityCode: string;
+  businessId: number;
+  amount: number;
+}
 export type PaymentWithBusinessName = Payment & { businessName: string };
 export type PaymentInsertData = Omit<Payment, "id" | "timestamp">;
 

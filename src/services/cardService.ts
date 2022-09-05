@@ -12,12 +12,15 @@ import errorFactory from "../utils/error";
 import notFound from "../utils/notFound";
 import getCardHolderName from "../utils/getCardHolderName";
 import dayjs from "dayjs";
+import dotenv from "dotenv";
 import Cryptr from "cryptr";
 import bcrypt from "bcrypt";
 import isExpired from "../utils/isExpired";
 import getCardBalance from "../utils/getCardBalance";
 
-const CRYPTR_SECRET = process.env.CRYPTR_SECRET || "some secret";
+dotenv.config();
+
+const CRYPTR_SECRET = process.env.CRYPTR_SECRET || "secret";
 const cryptr = new Cryptr(CRYPTR_SECRET);
 
 async function createCards(
@@ -105,38 +108,16 @@ async function getBalance(id: number) {
   return cardBalance;
 }
 
-async function blockCard(data: { id: number; password: string }) {
-  const cardData = await findById(data.id);
-  if (!cardData) throw notFound("Card");
-
-  if (cardData.isBlocked)
-    throw errorFactory("conflict", "Your card has already been blocked.");
-  if (isExpired(cardData.expirationDate))
-    throw errorFactory("card_expired", "Your card has expired.");
-  if (!cardData.password)
-    throw errorFactory("conflict", "Your card must be activated first.");
-
-  const correctPassword = await bcrypt.compare(
-    data.password,
-    cardData.password
-  );
-  if (!correctPassword)
-    throw errorFactory(
-      "invalid_password",
-      "Could not match the specified password."
-    );
-
-  await update(data.id, { isBlocked: true });
-}
-
 async function unblockCard(data: { id: number; password: string }) {
   const cardData = await findById(data.id);
   if (!cardData) throw notFound("Card");
 
   if (!cardData.isBlocked)
     throw errorFactory("conflict", "Your card is active.");
+
   if (isExpired(cardData.expirationDate))
     throw errorFactory("card_expired", "Your card has expired.");
+
   if (!cardData.password)
     throw errorFactory("conflict", "Your card must be activated first.");
 
@@ -153,10 +134,36 @@ async function unblockCard(data: { id: number; password: string }) {
   await update(data.id, { isBlocked: false });
 }
 
+async function blockCard(data: { id: number; password: string }) {
+  const cardData = await findById(data.id);
+  if (!cardData) throw notFound("Card");
+
+  if (cardData.isBlocked)
+    throw errorFactory("conflict", "Your card has already been blocked.");
+
+  if (isExpired(cardData.expirationDate))
+    throw errorFactory("card_expired", "Your card has expired.");
+
+  if (!cardData.password)
+    throw errorFactory("conflict", "Your card must be activated first.");
+
+  const correctPassword = await bcrypt.compare(
+    data.password,
+    cardData.password
+  );
+  if (!correctPassword)
+    throw errorFactory(
+      "invalid_password",
+      "Could not match the specified password."
+    );
+
+  await update(data.id, { isBlocked: true });
+}
+
 export default {
   createCards,
   activateCard,
   getBalance,
-  blockCard,
   unblockCard,
+  blockCard,
 };

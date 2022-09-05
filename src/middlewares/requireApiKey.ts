@@ -11,5 +11,6 @@ export default function requireApiKey(
     throw errorFactory("invalid_api_key", "Api Key must be  of type string.");
 
   res.locals["x-api-key"] = apiKey;
+
   next();
 }

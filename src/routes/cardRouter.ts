@@ -14,17 +14,21 @@ router.post(
   requireApiKey,
   cardController.createCards
 );
+
 router.put(
   "/activate",
   validateSchema(cardActivationSchema),
   cardController.activateCard
 );
+
 router.get("/:id/balance", cardController.getBalance);
+
 router.put(
   "/block",
   validateSchema(cardSecuritySchema),
   cardController.blockCard
 );
+
 router.put(
   "/unblock",
   validateSchema(cardSecuritySchema),
