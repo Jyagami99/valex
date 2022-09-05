@@ -3,6 +3,7 @@ import cors from "cors";
 import "express-async-errors";
 import dotenv from "dotenv";
 import cardsRouter from "./routes/cardRouter";
+import errorHandler from "./middlewares/errorHandler";
 
 async function main() {
   dotenv.config();
@@ -12,6 +13,8 @@ async function main() {
   app.use(json());
 
   app.use("/cards", cardsRouter);
+
+  app.use(errorHandler);
 
   const PORT: number = Number(process.env.PORT || 3333);
   app.listen(PORT, () => {

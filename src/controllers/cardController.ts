@@ -15,7 +15,27 @@ async function activateCard(req: Request, res: Response, next: NextFunction) {
   res.sendStatus(200);
 }
 
+async function getBalance(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
+  const cardBalance = await cardService.getBalance(Number(id));
+}
+
+async function blockCard(req: Request, res: Response, next: NextFunction) {
+  const bodyData = req.body;
+  await cardService.blockCard(bodyData);
+  res.sendStatus(200);
+}
+
+async function unblockCard(req: Request, res: Response, next: NextFunction) {
+  const bodyData = req.body;
+  await cardService.unblockCard(bodyData);
+  res.sendStatus(200);
+}
+
 export default {
   createCards,
   activateCard,
+  getBalance,
+  blockCard,
+  unblockCard,
 };
